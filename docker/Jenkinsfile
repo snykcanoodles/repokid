@@ -12,12 +12,16 @@ pipeline {
                 sh 'sudo chmod u+s /usr/bin/docker'
                 script {
                     dir("${WORKSPACE}/docker") {
+                        sh "mkdir repokid && find .. -not -name docker -mindepth 1 -maxdepth 1 -exec cp -Rp '{}' ./repokid/ ';'"
                         app = docker.build("repokid:${BUILD_NUMBER}", ".")
                         docker.withRegistry("${ART_SERVER}", 'a90b9141-9b65-4652-9ce0-4394bcd9da0c') {
                             app.push("${env.BUILD_NUMBER}")
                             app.push("latest")
                         }
                     }
+                }
+                dir("${WORKSPACE}/docker/repokid") {
+                    deleteDir()
                 }
             }
         }
