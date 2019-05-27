@@ -11,6 +11,7 @@ pipeline {
                 sh 'sudo cp /tmp/docker/* /usr/bin/'
                 sh 'sudo chmod u+s /usr/bin/docker'
                 script {
+                    sh 'ls -l'
                     dir("${WORKSPACE}") {
                         app = docker.build("repokid:${BUILD_NUMBER}", ".")
                         docker.withRegistry("${ART_SERVER}", 'a90b9141-9b65-4652-9ce0-4394bcd9da0c') {
