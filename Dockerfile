@@ -5,7 +5,7 @@ LABEL author="mbaciu@gopro.com"
 COPY config_from_env.py config_from_env.py
 COPY config.json.j2 config.json.j2
 
-RUN apt-get update && apt install -y cron
+RUN apt-get update || true && apt install -y cron
 
 RUN pip install bandit coveralls jinja2 && \
     pip install . && \
