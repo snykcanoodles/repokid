@@ -1,9 +1,15 @@
 FROM python:2.7-onbuild
 
-RUN pip install bandit coveralls && \
+LABEL author="mbaciu@gopro.com"
+
+COPY config_from_env.py config_from_env.py
+COPY config.json.j2 config.json.j2
+
+RUN apt-get update || true && apt install -y cron
+
+RUN pip install bandit coveralls jinja2 && \
     pip install . && \
     pip install -r test-requirements.txt && \
-    python setup.py develop && \
-    repokid config config.json # Generate example config
+    python setup.py develop
 
-ENTRYPOINT ["repokid"]
+CMD python config_from_env.py; cron -f
