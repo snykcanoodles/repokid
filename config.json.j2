@@ -34,6 +34,8 @@
 	},
 	"ExclusiveFilter": {
 		"all": [
+		    "*-qa*",
+            "qa-*"
 		]
 	}
     }, 
@@ -44,7 +46,7 @@
         "disable_existing_loggers": "False", 
         "formatters": {
             "standard": {
-                "format": "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
+                "format": "%(asctime)s %(levelname)s: %(message)s"
             }
         }, 
         "handlers": {
@@ -67,10 +69,11 @@
         "loggers": {
             "repokid": {
                 "handlers": [
-                    "file", 
+                    "file",
                     "console"
                 ], 
-                "level": "INFO"
+                "level": "INFO",
+                "propagate": false
             }
         }, 
         "version": 1
