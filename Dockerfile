@@ -1,9 +1,14 @@
-FROM python:2.7-onbuild
+FROM python:2.7-slim
 
 LABEL author="mbaciu@gopro.com"
 
-COPY config_from_env.py config_from_env.py
-COPY config.json.j2 config.json.j2
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY requirements.txt /usr/src/app/
+RUN pip install -r requirements.txt
+
+COPY . /usr/src/app
 
 RUN apt-get update || true && apt install -y cron
 
