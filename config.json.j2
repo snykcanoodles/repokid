@@ -2,8 +2,7 @@
     "aardvark_api_location": "http://{{ aardvark_host }}/api/1/advisors",
     "active_filters": [
         "repokid.filters.age:AgeFilter", 
-        "repokid.filters.lambda:LambdaFilter", 
-        "repokid.filters.blocklist:BlocklistFilter", 
+        "repokid.filters.blocklist:BlocklistFilter",
         "repokid.filters.optout:OptOutFilter",
         "repokid.filters.exclusive:ExclusiveFilter"
     ], 
@@ -27,13 +26,15 @@
     }, 
     "filter_config": {
         "AgeFilter": {
-            "minimum_age": 90
+            "minimum_age": 180
         }, 
         "BlocklistFilter": {
             "all": []
 	},
 	"ExclusiveFilter": {
 		"all": [
+            "*-qa*",
+            "qa-*"
 		]
 	}
     }, 
@@ -44,7 +45,7 @@
         "disable_existing_loggers": "False", 
         "formatters": {
             "standard": {
-                "format": "%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]"
+                "format": "%(asctime)s %(levelname)s: %(message)s"
             }
         }, 
         "handlers": {
@@ -67,10 +68,11 @@
         "loggers": {
             "repokid": {
                 "handlers": [
-                    "file", 
+                    "file",
                     "console"
                 ], 
-                "level": "INFO"
+                "level": "INFO",
+                "propagate": false
             }
         }, 
         "version": 1
