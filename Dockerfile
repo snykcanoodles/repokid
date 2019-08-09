@@ -2,6 +2,9 @@ FROM python:2.7-slim
 
 LABEL author="mbaciu@gopro.com"
 
+ENV REPOKID_ACCOUNTS=''
+ENV REPOKID_CRONJOB_SPEC='0 0 * * *'
+
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
@@ -17,4 +20,8 @@ RUN pip install bandit coveralls jinja2 && \
     pip install -r test-requirements.txt && \
     python setup.py develop
 
-CMD python config_from_env.py; cron -f
+COPY repokid.cronjob /etc/cron.d/repokid
+RUN chmod 0644 /etc/cron.d/repokid
+CMD /usr/src/app/start.sh
+
+
