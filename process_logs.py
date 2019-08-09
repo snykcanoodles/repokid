@@ -6,6 +6,7 @@ import sys
 import urllib2
 
 from boto3 import client
+from boto3.session import Session
 
 
 DEFAULT_CHANNEL = '#test-mbaciu'
@@ -21,6 +22,27 @@ def get_args_parser():
                         action='store')
     args = parser.parse_args()
     return args, parser
+
+
+def assume_role(role_name):
+    cl = client('sts')
+    account_id = cl.get_caller_identity()['Account']
+    assume_role_arn = 'arn:aws:iam::{account}:role/{role}'.format(account=account_id, role=role_name)
+    response = cl.assume_role(RoleArn=assume_role_arn, RoleSessionName='repokid-process-logs')
+    session = Session(aws_access_key_id=response['Credentials']['AccessKeyId'],
+                      aws_secret_access_key=response['Credentials']['SecretAccessKey'],
+                      aws_session_token=response['Credentials']['SessionToken'])
+    return session
+
+
+def get_client(service):
+    repokid_assume_role = os.environ.get('REPOKID_ROLE')
+    if repokid_assume_role:
+        session = assume_role(repokid_assume_role)
+        cl = session.client(service)
+    else:
+        cl = client(service)
+    return cl
 
 
 def get_sm_secret(secret_id, region):
@@ -68,23 +90,21 @@ def parse_repokid_log(fd):
     return account, roles
 
 
-def get_iam_role_policy(role, policy):
-    iam = client('iam')
-    policy = iam.get_role_policy(RoleName=role,
-                                 PolicyName=policy)['PolicyDocument']
+def get_iam_role_policy(role, policy, cl):
+    policy = cl.get_role_policy(RoleName=role,
+                                PolicyName=policy)['PolicyDocument']
     return policy
 
 
-def list_role_policies(role):
+def list_role_policies(role, cl):
     policies = []
-    iam = client('iam')
     marker = None
     while True:
         if marker:
-            response = iam.list_role_policies(RoleName=role,
-                                              Marker=marker)
+            response = cl.list_role_policies(RoleName=role,
+                                             Marker=marker)
         else:
-            response = iam.list_role_policies(RoleName=role)
+            response = cl.list_role_policies(RoleName=role)
         policies += response['PolicyNames']
         if response['IsTruncated'] is True:
             marker = response['Marker']
@@ -110,6 +130,8 @@ if __name__ == '__main__':
     aws_region = os.environ.get('AWS_REGION', DEFAULT_REGION)
     slack_url = 'https://{e}'.format(e=get_sm_secret(secret_id=slackhook_secret, region=aws_region))
 
+    cl = get_client('iam')
+
     repokid_account, repokid_roles = None, None
     current_roles = {}
     if args.filename:
@@ -123,9 +145,9 @@ if __name__ == '__main__':
 
     for repokid_role in repokid_roles:
         current_roles[repokid_role] = {}
-        role_policy_list = list_role_policies(role=repokid_role)
+        role_policy_list = list_role_policies(role=repokid_role, cl=cl)
         for policy in role_policy_list:
-            policy_document = get_iam_role_policy(role=repokid_role, policy=policy)
+            policy_document = get_iam_role_policy(role=repokid_role, policy=policy, cl=cl)
             current_roles[repokid_role][policy] = policy_document
 
     slack_msg = ['*repokid wants to make to following changes:*']
