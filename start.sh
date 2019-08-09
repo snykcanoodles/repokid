@@ -3,6 +3,7 @@
 echo "Creating the repokid cronjob..."
 /bin/sed -i -e "s/ENV_REPOKID_CRONJOB_SPEC/$REPOKID_CRONJOB_SPEC/g" \
             -e "s/ENV_REPOKID_ACCOUNT/$REPOKID_ACCOUNT/g" \
+            -e "s/ENV_REPOKID_ROLE/$REPOKID_ROLE/g" \
             -e "s/ENV_SLACKHOOK_SECRET/$SLACKHOOK_SECRET/g" \
             -e "s/ENV_SLACK_CHANNEL/$SLACK_CHANNEL/g" \
             -e "s/ENV_AWS_REGION/$AWS_REGION/g" \
