@@ -2,7 +2,7 @@ FROM python:2.7-slim
 
 LABEL author="mbaciu@gopro.com"
 
-ENV REPOKID_ACCOUNTS=''
+ENV REPOKID_ACCOUNT=''
 ENV REPOKID_CRONJOB_SPEC='0 0 * * *'
 
 RUN mkdir -p /usr/src/app
