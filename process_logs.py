@@ -175,7 +175,7 @@ if __name__ == '__main__':
                      'username': SLACK_USER,
                      'attachments': [
                          {'fallback': '',
-                          'text': '`' + '\n'.join(slack_att) + '`',
+                          'text': '\n'.join(slack_att),
                           }
                      ]
                      }
