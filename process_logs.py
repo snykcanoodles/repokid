@@ -71,6 +71,9 @@ def parse_repokid_log(fd):
     # Would replace policies for role qa-ecs-drain-lambda-eu-central-1 with:
     # } in account 786930545984
     for line in fd:
+        # Also set the line to stdout; helps when running cronjob inside docker (log will be visible with docker logs)
+        # sys.stdout.write() so that there's no newline at the end
+        sys.stdout.write(line)
         if START_MARKER in line:
             start_seen = True
             role = line.split()[8]
