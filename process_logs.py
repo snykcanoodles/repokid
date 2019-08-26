@@ -153,7 +153,7 @@ if __name__ == '__main__':
             policy_document = get_iam_role_policy(role=repokid_role, policy=policy, cl=cl_iam)
             current_roles[repokid_role][policy] = policy_document
 
-   slack_att = []
+    slack_att = []
     if current_roles:
         slack_msg = ['*repokid wants to make to following changes:*']
         for role in current_roles:
