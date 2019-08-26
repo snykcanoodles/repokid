@@ -153,24 +153,27 @@ if __name__ == '__main__':
             policy_document = get_iam_role_policy(role=repokid_role, policy=policy, cl=cl_iam)
             current_roles[repokid_role][policy] = policy_document
 
-    slack_msg = ['*repokid wants to make to following changes:*']
-    slack_att = []
-    for role in current_roles:
-        # slack_msg.append('_Role: {r}_'.format(r=role))
-        slack_att.append('_Role: {r}_'.format(r=role))
-        deleted_policies = [p for p in current_roles[role] if p not in repokid_roles[role]]
-        if deleted_policies:
-            # slack_msg.append('\tDelete policies: {dp}'.format(dp=', '.join(deleted_policies)))
-            slack_att.append('\tDelete policies: {dp}'.format(dp=', '.join(deleted_policies)))
-        if current_roles[role]:
-            # slack_msg.append('\tChange policie(s): {p}'.format(p=', '.join([p for p in repokid_roles[role]])))
-            for policy in current_roles[role]:
-                policy_diff = find_diffs(current_roles[role][policy], repokid_roles[role][policy])
-                slack_att.append('Change policy {p}'.format(p=policy))
-                slack_att += policy_diff
-        else:
-            # slack_msg.append('\tChange policies: none')
-            slack_att.append('\tChange policies: none')
+    if current_roles:
+        slack_msg = ['*repokid wants to make to following changes:*']
+        slack_att = []
+        for role in current_roles:
+            # slack_msg.append('_Role: {r}_'.format(r=role))
+            slack_att.append('_Role: {r}_'.format(r=role))
+            deleted_policies = [p for p in current_roles[role] if p not in repokid_roles[role]]
+            if deleted_policies:
+                # slack_msg.append('\tDelete policies: {dp}'.format(dp=', '.join(deleted_policies)))
+                slack_att.append('\tDelete policies: {dp}'.format(dp=', '.join(deleted_policies)))
+            if current_roles[role]:
+                # slack_msg.append('\tChange policie(s): {p}'.format(p=', '.join([p for p in repokid_roles[role]])))
+                for policy in current_roles[role]:
+                    policy_diff = find_diffs(current_roles[role][policy], repokid_roles[role][policy])
+                    slack_att.append('Change policy {p}'.format(p=policy))
+                    slack_att += policy_diff
+            else:
+                # slack_msg.append('\tChange policies: none')
+                slack_att.append('\tChange policies: none')
+    else:
+        slack_msg = ['All good. No changes planned.']
 
     slack_payload = {'type': 'section',
                      'text': '\n'.join(slack_msg),
