@@ -18,6 +18,7 @@ RUN apt-get update || true && apt install -y cron
 RUN pip install bandit coveralls jinja2 && \
     pip install . && \
     pip install -r test-requirements.txt && \
+    pip install -r gopro-requirements.txt && \
     python setup.py develop
 
 COPY repokid.cronjob /etc/cron.d/repokid
