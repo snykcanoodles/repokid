@@ -1,6 +1,7 @@
 import argparse
-import json
+import datadog
 import difflib
+import json
 import os
 import sys
 import urllib2
@@ -44,7 +45,7 @@ def get_session():
     return session
 
 
-def get_sm_secret(secret_id, region, cl):
+def get_sm_secret(secret_id, cl):
     secret = cl.get_secret_value(SecretId=secret_id)
     return secret['SecretString']
 
@@ -127,13 +128,22 @@ if __name__ == '__main__':
     args, parser = get_args_parser()
     session = get_session()
     slackhook_secret = os.environ['SLACKHOOK_SECRET']
+    datadog_secret = os.environ['DATADOG_SECRET']
     slack_channel = os.environ.get('SLACK_CHANNEL', DEFAULT_CHANNEL)
     aws_region = os.environ.get('AWS_REGION', DEFAULT_REGION)
 
     cl_iam = session.client('iam')
     cl_sm = session.client('secretsmanager', region_name=aws_region)
 
-    slack_url = 'https://{e}'.format(e=get_sm_secret(secret_id=slackhook_secret, region=aws_region, cl=cl_sm))
+    slack_url = 'https://{e}'.format(e=get_sm_secret(secret_id=slackhook_secret, cl=cl_sm))
+
+    datadog_keys = json.loads(get_sm_secret(secret_id=datadog_secret, cl=cl_sm))
+    datadog.initialize(**datadog_keys)
+    datadog.api.Event.create(title='Repokid process logs start',
+                             text='',
+                             aggregation_key='repokid',
+                             alert_type='info',
+                             tags=['repokid'])
 
     repokid_account, repokid_roles = None, None
     current_roles = {}
@@ -186,3 +196,8 @@ if __name__ == '__main__':
                      ]
                      }
     slack_post(slack_url=slack_url, payload=slack_payload)
+    datadog.api.Event.create(title='Repokid process logs end',
+                             text='',
+                             aggregation_key='repokid',
+                             alert_type='info',
+                             tags=['repokid'])

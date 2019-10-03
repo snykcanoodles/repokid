@@ -5,6 +5,7 @@ echo "Creating the repokid cronjob..."
             -e "s/ENV_REPOKID_ACCOUNT/$REPOKID_ACCOUNT/g" \
             -e "s/ENV_REPOKID_ROLE/$REPOKID_ROLE/g" \
             -e "s/ENV_SLACKHOOK_SECRET/$SLACKHOOK_SECRET/g" \
+            -e "s/ENV_DATADOG_SECRET/$DATADOG_SECRET/g" \
             -e "s/ENV_SLACK_CHANNEL/$SLACK_CHANNEL/g" \
             -e "s/ENV_AWS_REGION/$AWS_REGION/g" \
             -e "s#ENV_AWS_CONTAINER_CREDENTIALS_RELATIVE_URI#$AWS_CONTAINER_CREDENTIALS_RELATIVE_URI#g" \

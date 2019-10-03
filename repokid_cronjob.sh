@@ -2,6 +2,7 @@
 export AWS_REGION
 export REPOKID_ROLE
 export SLACKHOOK_SECRET
+export DATADOG_SECRET
 export SLACK_CHANNEL
 
 cd /usr/src/app
