@@ -58,7 +58,7 @@ def slack_post(slack_url, payload):
     # payload = {'channel': channel,
     #            'username': username,
     #            'text': text}
-    response = urllib.request.urlopen(slack_request, json.dumps(payload))
+    response = urllib.request.urlopen(slack_request, json.dumps(payload).encode('utf-8'))
     response_code = response.getcode()
     return response_code == 200
 
