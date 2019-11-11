@@ -1,4 +1,7 @@
-FROM python:2.7-slim
+FROM python:3.7-slim
+
+WORKDIR /usr/src/app
+COPY . .
 
 LABEL author="mbaciu@gopro.com"
 
@@ -15,14 +18,12 @@ COPY . /usr/src/app
 
 RUN apt-get update || true && apt install -y cron
 
-RUN pip install bandit coveralls jinja2 && \
-    pip install . && \
-    pip install -r test-requirements.txt && \
+RUN pip install -r requirements-test.txt && \
     pip install -r gopro-requirements.txt && \
+    pip install . && \
+    pip install jinja2 && \
     python setup.py develop
 
 COPY repokid.cronjob /etc/cron.d/repokid
 RUN chmod 0644 /etc/cron.d/repokid
 CMD /usr/src/app/start.sh
-
-
