@@ -18,10 +18,10 @@ COPY . /usr/src/app
 
 RUN apt-get update || true && apt install -y cron
 
-RUN pip install bandit coveralls jinja2 && \
-    pip install . && \
-    pip install -r requirements-test.txt && \
+RUN pip install -r requirements-test.txt && \
     pip install -r gopro-requirements.txt && \
+    pip install . && \
+    pip install jinja2 && \
     python setup.py develop
 
 COPY repokid.cronjob /etc/cron.d/repokid
