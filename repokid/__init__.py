@@ -94,7 +94,6 @@ def init_logging():
     log.propagate = False
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel("DEBUG")
-    log.addHandler(handler)
     if CONFIG:
         json_logging_file = CONFIG.get("json_logging_file")
         if json_logging_file:
