@@ -2,11 +2,14 @@ boto3
 cloudaux
 docopt
 import_string
-marshmallow
+logmatic-python
+marshmallow<3
 policyuniverse
 requests
 tabulate
 tabview
 tqdm
 pip-tools
+pytz
 twine
+raven

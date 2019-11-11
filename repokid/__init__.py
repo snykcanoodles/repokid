@@ -11,15 +11,30 @@
 #     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #     See the License for the specific language governing permissions and
 #     limitations under the License.
-from collections import defaultdict
+import collections
+import datetime
 import inspect
 import json
 import logging.config
 import os
+import socket
+import sys
 
 import import_string
+import logmatic
+from pytz import timezone
 
-__version__ = '0.9.5'
+__version__ = "0.11.0"
+
+
+class ContextFilter(logging.Filter):
+    """Logging Filter for adding hostname to log entries."""
+
+    hostname = socket.gethostname()
+
+    def filter(self, record):
+        record.hostname = ContextFilter.hostname
+        return True
 
 
 def init_config():
@@ -33,12 +48,14 @@ def init_config():
     Returns:
         None
     """
-    load_config_paths = [os.path.join(os.getcwd(), 'config.json'),
-                         '/etc/repokid/config.json',
-                         '/apps/repokid/config.json']
+    load_config_paths = [
+        os.path.join(os.getcwd(), "config.json"),
+        "/etc/repokid/config.json",
+        "/apps/repokid/config.json",
+    ]
     for path in load_config_paths:
         try:
-            with open(path, 'r') as f:
+            with open(path, "r") as f:
                 print("Loaded config from {}".format(path))
                 return json.load(f)
 
@@ -58,19 +75,37 @@ def init_logging():
     Returns:
         None
     """
+
     if CONFIG:
-        logging.config.dictConfig(CONFIG['logging'])
+        logging.config.dictConfig(CONFIG["logging"])
 
     # these loggers are very noisy
     suppressed_loggers = [
-        'botocore.vendored.requests.packages.urllib3.connectionpool',
-        'urllib3'
+        "botocore.vendored.requests.packages.urllib3.connectionpool",
+        "urllib3",
     ]
 
     for logger in suppressed_loggers:
         logging.getLogger(logger).setLevel(logging.ERROR)
 
-    return logging.getLogger(__name__)
+    log = logging.getLogger(__name__)
+    log.addFilter(ContextFilter())
+    extra = {"eventTime": datetime.datetime.now(timezone("US/Pacific")).isoformat()}
+    log.propagate = False
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel("DEBUG")
+    log.addHandler(handler)
+    if CONFIG:
+        json_logging_file = CONFIG.get("json_logging_file")
+        if json_logging_file:
+            if "~" in json_logging_file:
+                json_logging_file = os.path.expanduser(json_logging_file)
+            os.makedirs(os.path.dirname(json_logging_file), exist_ok=True)
+            file_handler = logging.FileHandler(json_logging_file)
+            file_handler.setFormatter(logmatic.JsonFormatter())
+            log.addHandler(file_handler)
+    log = logging.LoggerAdapter(log, extra)
+    return log
 
 
 def _get_hooks(hooks_list):
@@ -83,7 +118,7 @@ def _get_hooks(hooks_list):
     Returns:
         dict: Keys are hooks by name (AFTER_SCHEDULE_REPO) and values are a list of functions to execute
     """
-    hooks = defaultdict(list)
+    hooks = collections.defaultdict(list)
     for hook in hooks_list:
         module = import_string(hook)
         # get members retrieves all the functions from a given module
@@ -94,7 +129,9 @@ def _get_hooks(hooks_list):
             if hasattr(func, "_implements_hook"):
                 # append to the dictionary in whatever order we see them, we'll sort later. Dictionary value should be
                 # a list of tuples (priority, function)
-                hooks[func._implements_hook['hook_name']].append((func._implements_hook['priority'], func))
+                hooks[func._implements_hook["hook_name"]].append(
+                    (func._implements_hook["priority"], func)
+                )
 
     # sort by priority
     for k in hooks.keys():
