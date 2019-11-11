@@ -3,8 +3,9 @@ import datadog
 import difflib
 import json
 import os
+import re
 import sys
-import urllib2
+import urllib.request
 
 from boto3 import client
 from boto3.session import Session
@@ -51,13 +52,13 @@ def get_sm_secret(secret_id, cl):
 
 
 def slack_post(slack_url, payload):
-    slack_request = urllib2.Request(slack_url)
+    slack_request = urllib.request.Request(slack_url)
     slack_request.add_header('Accept', 'application/json')
     # slack_request.add_header('Content-Type', 'application/json')
     # payload = {'channel': channel,
     #            'username': username,
     #            'text': text}
-    response = urllib2.urlopen(slack_request, json.dumps(payload))
+    response = urllib.request.urlopen(slack_request, json.dumps(payload))
     response_code = response.getcode()
     return response_code == 200
 
@@ -68,6 +69,8 @@ def parse_repokid_log(fd):
     policy_str = ''
     START_MARKER = 'Would replace policies for role'
     END_MARKER = '} in account'
+    re_START_MARKER = re.compile(f'.*{START_MARKER} (\\S+) with:')
+    re_END_MARKER = re.compile(f'.*{END_MARKER} (\\d+)')
     start_seen = False
     # Would replace policies for role qa-ecs-drain-lambda-eu-central-1 with:
     # } in account 786930545984
@@ -77,11 +80,11 @@ def parse_repokid_log(fd):
         sys.stdout.write(line)
         if START_MARKER in line:
             start_seen = True
-            role = line.split()[8]
+            role = re_START_MARKER.match(line).groups()[0]
             continue
         elif start_seen:
             if END_MARKER in line:
-                account = line.split()[3]
+                account = re_END_MARKER.match(line).groups()[0]
                 policy_str += '}'
                 policy_parsed = json.loads(policy_str)
                 roles[role] = policy_parsed
