@@ -13,9 +13,10 @@ with open('config.json.j2') as fd:
     config_template = jinja2.Template(fd.read())
 
 with open('config.json', 'w') as fd:
-    print >> fd, config_template.render(aardvark_host=aardvark_host,
-                                        repokid_role=repokid_role,
-                                        aws_region=aws_region,
-                                        dynamodb_endpoint=dynamodb_endpoint,
-                                        dynamodb_region=dynamodb_region)
+    print(config_template.render(aardvark_host=aardvark_host,
+                                 repokid_role=repokid_role,
+                                 aws_region=aws_region,
+                                 dynamodb_endpoint=dynamodb_endpoint,
+                                 dynamodb_region=dynamodb_region),
+          file=fd)
 print('Done.')
